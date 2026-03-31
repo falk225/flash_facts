@@ -1,0 +1,52 @@
+/* Animated star/confetti background for end screen */
+.end-screen .confetti-emoji {
+  font-size: 3rem;
+  animation: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes bounce-in {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* Card entrance animation */
+.flash-card {
+  animation: card-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes card-in {
+  from { transform: scale(0.93) translateY(8px); opacity: 0.6; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Shake animation for wrong answer input */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-5px); }
+  80%       { transform: translateX(5px); }
+}
+
+.answer-input.shake {
+  animation: shake 0.4s ease;
+  border-color: var(--color-error) !important;
+}
+
+/* Avatar colors cycle */
+.avatar-0 { background: #5b6af5; }
+.avatar-1 { background: #ff7043; }
+.avatar-2 { background: #43a047; }
+.avatar-3 { background: #ab47bc; }
+.avatar-4 { background: #e91e63; }
+
+/* Operation card accent colors */
+.op-addition    .op-symbol { color: #5b6af5; }
+.op-subtraction .op-symbol { color: #e53935; }
+.op-multiplication .op-symbol { color: #ff7043; }
+.op-division    .op-symbol { color: #43a047; }
+
+/* Selected account button accent */
+.account-btn.selected .avatar {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--color-primary);
+}

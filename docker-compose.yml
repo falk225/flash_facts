@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  flash_facts:
+    build: .
+    container_name: flash_facts
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

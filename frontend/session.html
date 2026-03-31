@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Facts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+<div class="page">
+
+  <!-- Session view -->
+  <div id="session-view" class="session-container">
+    <div class="page-header" style="margin-bottom: 0;">
+      <span class="logo">⚡</span>
+      <h1 id="session-user" style="font-size:1.4rem;"></h1>
+    </div>
+
+    <div class="score-row">
+      <span id="score-display">0 / 0 correct on first try</span>
+      <span id="cards-left"></span>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <div class="flash-card card">
+      <div class="flash-problem" id="problem-display"></div>
+    </div>
+
+    <div class="answer-row">
+      <input
+        type="number"
+        id="answer-input"
+        class="answer-input"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        placeholder="?"
+        autocomplete="off"
+        min="0"
+        max="999"
+      >
+      <button class="submit-btn" id="submit-btn">Check ✓</button>
+    </div>
+  </div>
+
+  <!-- End screen (hidden until session complete) -->
+  <div id="end-screen" class="end-screen" style="display:none;">
+    <div class="confetti-emoji" id="end-emoji">🌟</div>
+    <h2 style="font-size: 2rem;">You finished!</h2>
+    <p class="end-score" id="end-message"></p>
+    <p style="font-size: 2rem; font-weight: 800;" id="end-pct"></p>
+    <div class="end-actions">
+      <button class="btn-primary" id="play-again-btn">▶ Play Again</button>
+      <button class="btn-secondary" id="stats-btn-end">📊 My Stats</button>
+      <button class="btn-secondary" id="home-btn">🏠 Home</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="feedback-overlay" id="feedback-overlay"></div>
+
+<script src="js/api.js"></script>
+<script src="js/deck.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/session.js"></script>
+</body>
+</html>

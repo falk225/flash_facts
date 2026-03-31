@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Facts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+<div class="page">
+  <div class="page-header">
+    <span class="logo">⚡</span>
+    <h1>Flash Facts</h1>
+  </div>
+
+  <div id="account-grid" class="account-grid"></div>
+
+  <div id="add-account-section" class="add-account-form" style="display:none;">
+    <input type="text" id="new-name-input" placeholder="Add new player..." maxlength="20" autocomplete="off">
+    <button class="btn-primary" id="add-account-btn" style="padding: 12px 20px; min-height: 52px;">Add</button>
+  </div>
+
+  <div class="account-actions">
+    <button class="btn-primary" id="play-btn" disabled>▶ Play</button>
+    <button class="btn-secondary" id="config-btn" disabled>⚙ Settings</button>
+    <button class="btn-secondary" id="stats-btn" disabled>📊 Stats</button>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/account-selector.js"></script>
+</body>
+</html>

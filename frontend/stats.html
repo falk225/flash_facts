@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stats – Flash Facts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+<div class="page">
+  <div class="page-header">
+    <span class="logo">📊</span>
+    <h1 id="stats-user">My Progress</h1>
+  </div>
+
+  <div class="stats-container">
+
+    <!-- Summary chips -->
+    <div class="stats-summary">
+      <div class="stat-chip">
+        <div class="stat-value" id="stat-sessions">0</div>
+        <div class="stat-label">Sessions</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-value" id="stat-avg">—</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-value" id="stat-last">—</div>
+        <div class="stat-label">Last Played</div>
+      </div>
+    </div>
+
+    <!-- History chart -->
+    <div class="problem-areas-section">
+      <div class="section-title">Session History (last 20)</div>
+      <div id="history-chart" style="margin-top: 12px; padding-bottom: 24px; position: relative;"></div>
+    </div>
+
+    <!-- Problem areas -->
+    <div>
+      <div class="section-title" style="margin-bottom: 12px;">Problem Areas</div>
+      <div id="problem-areas-container"></div>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 24px; width: 100%; max-width: 640px;">
+    <button class="btn-secondary" id="home-btn" style="width: 100%;">🏠 Home</button>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/stats.js"></script>
+</body>
+</html>
