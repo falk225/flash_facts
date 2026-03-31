@@ -9,6 +9,8 @@ let seenOnce = new Set();
 let firstTryCorrect = new Set();
 let cardResults = {};   // { cardId: { label, operation, first_try_correct } }
 let accepting = true;   // false briefly after an answer to prevent double-submit
+let correctSinceLastSave = 0;
+const AUTO_SAVE_INTERVAL = 10;
 
 const problemDisplay = document.getElementById('problem-display');
 const answerInput    = document.getElementById('answer-input');
@@ -82,11 +84,12 @@ function startFresh(config) {
 }
 
 function loadDraft(draft) {
-  deck          = draft.remaining_deck;
-  totalCards    = draft.total_cards;
-  seenOnce      = new Set(draft.seen_once || []);
+  deck            = draft.remaining_deck;
+  totalCards      = draft.total_cards;
+  seenOnce        = new Set(draft.seen_once || []);
   firstTryCorrect = new Set(draft.first_try_correct || []);
-  cardResults   = draft.card_results || {};
+  cardResults     = draft.card_results || {};
+  correctSinceLastSave = 0;
   nextCard();
 }
 
@@ -153,6 +156,17 @@ function submitAnswer() {
     if (isFirstSeen) {
       firstTryCorrect.add(currentCard.id);
       cardResults[currentCard.id].first_try_correct = true;
+    }
+    correctSinceLastSave++;
+    if (correctSinceLastSave >= AUTO_SAVE_INTERVAL) {
+      correctSinceLastSave = 0;
+      API.saveDraft(accountId, {
+        total_cards: totalCards,
+        remaining_deck: [...deck],
+        seen_once: [...seenOnce],
+        first_try_correct: [...firstTryCorrect],
+        card_results: cardResults
+      });
     }
     setTimeout(nextCard, 500);
   } else {
