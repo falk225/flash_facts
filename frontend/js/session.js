@@ -7,8 +7,8 @@ let totalCards = 0;
 let currentCard = null;
 let seenOnce = new Set();
 let firstTryCorrect = new Set();
-let cardResults = {};   // { cardId: { label, operation, firstTryCorrect } }
-let soundsLoaded = false;
+let cardResults = {};   // { cardId: { label, operation, first_try_correct } }
+let accepting = true;   // false briefly after an answer to prevent double-submit
 
 const problemDisplay = document.getElementById('problem-display');
 const answerInput    = document.getElementById('answer-input');
@@ -19,19 +19,53 @@ const cardsLeft      = document.getElementById('cards-left');
 const feedbackEl     = document.getElementById('feedback-overlay');
 const sessionView    = document.getElementById('session-view');
 const endScreen      = document.getElementById('end-screen');
+const resumeDialog   = document.getElementById('resume-dialog');
 
 async function init() {
   if (!accountId) { window.location.href = '/'; return; }
 
-  const [accounts, config] = await Promise.all([
+  const [accounts, config, draft] = await Promise.all([
     API.getAccounts(),
-    API.getConfig(accountId)
+    API.getConfig(accountId),
+    API.getDraft(accountId)
   ]);
+
   const acc = accounts.find(a => a.id === accountId);
   if (!acc || !config.operations) { window.location.href = '/'; return; }
-
   document.getElementById('session-user').textContent = acc.name;
 
+  Sound.load();
+
+  if (draft && draft.remaining_deck && draft.remaining_deck.length > 0) {
+    showResumeDialog(draft, config);
+  } else {
+    startFresh(config);
+  }
+}
+
+function showResumeDialog(draft, config) {
+  const done = draft.total_cards - draft.remaining_deck.length;
+  const pct  = draft.total_cards > 0 ? Math.round(done / draft.total_cards * 100) : 0;
+  const when = draft.saved_at ? draft.saved_at.replace('T', ' at ').slice(0, 19) : '';
+  document.getElementById('resume-subtitle').textContent =
+    `${pct}% complete (${done} of ${draft.total_cards} cards done)` +
+    (when ? ` · Saved ${when}` : '');
+
+  resumeDialog.style.display = 'flex';
+
+  document.getElementById('resume-btn').addEventListener('click', () => {
+    resumeDialog.style.display = 'none';
+    loadDraft(draft);
+  }, { once: true });
+
+  document.getElementById('fresh-btn').addEventListener('click', () => {
+    resumeDialog.style.display = 'none';
+    API.deleteDraft(accountId);
+    startFresh(config);
+  }, { once: true });
+}
+
+function startFresh(config) {
   deck = generateDeck(config);
   totalCards = deck.length;
 
@@ -41,7 +75,15 @@ async function init() {
     return;
   }
 
-  Sound.load().then(() => { soundsLoaded = true; });
+  nextCard();
+}
+
+function loadDraft(draft) {
+  deck          = draft.remaining_deck;
+  totalCards    = draft.total_cards;
+  seenOnce      = new Set(draft.seen_once || []);
+  firstTryCorrect = new Set(draft.first_try_correct || []);
+  cardResults   = draft.card_results || {};
   nextCard();
 }
 
@@ -50,6 +92,7 @@ function nextCard() {
     endSession();
     return;
   }
+  accepting = true;
   currentCard = deck.shift();
   renderCard();
   answerInput.value = '';
@@ -57,24 +100,18 @@ function nextCard() {
 }
 
 function renderCard() {
-  // Re-create element to retrigger animation
   const parent = problemDisplay.parentElement;
   parent.classList.remove('flash-card');
-  void parent.offsetWidth; // reflow
+  void parent.offsetWidth;
   parent.classList.add('flash-card');
-
   problemDisplay.textContent = currentCard.display;
   updateProgress();
 }
 
 function updateProgress() {
-  const completed = totalCards - deck.length;
-  const pct = totalCards > 0 ? (completed / totalCards) * 100 : 0;
+  const pct = totalCards > 0 ? ((totalCards - deck.length) / totalCards) * 100 : 0;
   progressFill.style.width = pct + '%';
-
-  const correct = firstTryCorrect.size;
-  const seen = seenOnce.size;
-  scoreDisplay.textContent = `${correct} / ${seen} correct on first try`;
+  scoreDisplay.textContent = `${firstTryCorrect.size} / ${seenOnce.size} correct on first try`;
   cardsLeft.textContent = `${deck.length} card${deck.length !== 1 ? 's' : ''} left`;
 }
 
@@ -86,13 +123,16 @@ function showFeedback(type) {
 }
 
 function submitAnswer() {
+  if (!accepting || !currentCard) return;
   const raw = answerInput.value.trim();
   if (raw === '') return;
   const userAnswer = parseInt(raw, 10);
   if (isNaN(userAnswer)) return;
 
+  accepting = false;
+
   const isFirstSeen = !seenOnce.has(currentCard.id);
-  const isCorrect = userAnswer === currentCard.answer;
+  const isCorrect   = userAnswer === currentCard.answer;
 
   seenOnce.add(currentCard.id);
 
@@ -119,30 +159,50 @@ function submitAnswer() {
     answerInput.addEventListener('animationend', () => {
       answerInput.classList.remove('shake');
     }, { once: true });
-    deck.push(currentCard); // re-queue
+    deck.push(currentCard);
     setTimeout(nextCard, 600);
   }
 }
 
 submitBtn.addEventListener('click', submitAnswer);
-
 answerInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') submitAnswer();
 });
 
+// --- Quit & save progress ---
+
+document.getElementById('quit-btn').addEventListener('click', async () => {
+  // Re-add current card to front of deck so it's included in the save
+  const remainingDeck = currentCard ? [currentCard, ...deck] : [...deck];
+
+  await API.saveDraft(accountId, {
+    total_cards: totalCards,
+    remaining_deck: remainingDeck,
+    seen_once: [...seenOnce],
+    first_try_correct: [...firstTryCorrect],
+    card_results: cardResults
+  });
+
+  window.location.href = '/';
+});
+
+// --- End session ---
+
 async function endSession() {
-  const total = totalCards;
+  const total   = totalCards;
   const correct = firstTryCorrect.size;
   const scorePct = total > 0 ? Math.round(correct / total * 100) : 0;
 
-  // Save to server
-  await API.saveSession(accountId, {
-    total_cards: total,
-    first_try_correct: correct,
-    card_results: Object.values(cardResults)
-  });
+  // Clear any saved draft and save completed session
+  await Promise.all([
+    API.deleteDraft(accountId),
+    API.saveSession(accountId, {
+      total_cards: total,
+      first_try_correct: correct,
+      card_results: Object.values(cardResults)
+    })
+  ]);
 
-  // Show end screen
   sessionView.style.display = 'none';
   endScreen.style.display = 'flex';
 

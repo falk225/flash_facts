@@ -44,5 +44,24 @@ const API = {
   async getStats(id) {
     const r = await fetch(`/api/accounts/${id}/stats`);
     return r.json();
+  },
+
+  async getDraft(id) {
+    const r = await fetch(`/api/accounts/${id}/session-draft`);
+    return r.json();
+  },
+
+  async saveDraft(id, payload) {
+    const r = await fetch(`/api/accounts/${id}/session-draft`, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    return r.json();
+  },
+
+  async deleteDraft(id) {
+    const r = await fetch(`/api/accounts/${id}/session-draft`, {method: 'DELETE'});
+    return r.json();
   }
 };

@@ -13,11 +13,25 @@
 <body>
 <div class="page">
 
+  <!-- Resume dialog (shown if a saved draft exists) -->
+  <div id="resume-dialog" class="modal-backdrop" style="display:none;">
+    <div class="modal-box">
+      <div style="font-size:2.5rem; margin-bottom:12px;">💾</div>
+      <h2 style="margin-bottom:8px;">Saved Game Found</h2>
+      <p id="resume-subtitle" style="color:var(--color-muted); margin-bottom:24px;"></p>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <button class="btn-primary" id="resume-btn">▶ Resume</button>
+        <button class="btn-secondary" id="fresh-btn">↺ Start Fresh</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Session view -->
   <div id="session-view" class="session-container">
-    <div class="page-header" style="margin-bottom: 0;">
+    <div class="page-header" style="margin-bottom: 0; position: relative;">
       <span class="logo">⚡</span>
       <h1 id="session-user" style="font-size:1.4rem;"></h1>
+      <button class="quit-btn" id="quit-btn" title="Save &amp; Quit">✕ Quit</button>
     </div>
 
     <div class="score-row">

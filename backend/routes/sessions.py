@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from flask import Blueprint, jsonify, request
 from backend.services.data_store import load_users, save_users, find_account
 
@@ -74,3 +74,55 @@ def get_stats(account_id):
     if not acc:
         return jsonify({"error": "Account not found"}), 404
     return jsonify(acc.get("stats", {}))
+
+
+# --- Session draft (save/resume in-progress sessions) ---
+
+@sessions_bp.route('/api/accounts/<account_id>/session-draft', methods=['GET'])
+def get_draft(account_id):
+    data = load_users()
+    acc = find_account(data, account_id)
+    if not acc:
+        return jsonify({"error": "Account not found"}), 404
+    draft = acc.get("draft_session")
+    return jsonify(draft)  # returns null/None if no draft
+
+
+@sessions_bp.route('/api/accounts/<account_id>/session-draft', methods=['PUT'])
+def save_draft(account_id):
+    """
+    Body: {
+      "total_cards": int,
+      "remaining_deck": [...card objects...],
+      "seen_once": [...card IDs...],
+      "first_try_correct": [...card IDs...],
+      "card_results": { cardId: {...} }
+    }
+    """
+    body = request.get_json(silent=True) or {}
+    data = load_users()
+    acc = find_account(data, account_id)
+    if not acc:
+        return jsonify({"error": "Account not found"}), 404
+
+    acc["draft_session"] = {
+        "saved_at": datetime.now().isoformat(timespec='seconds'),
+        "total_cards": body.get("total_cards", 0),
+        "remaining_deck": body.get("remaining_deck", []),
+        "seen_once": body.get("seen_once", []),
+        "first_try_correct": body.get("first_try_correct", []),
+        "card_results": body.get("card_results", {})
+    }
+    save_users(data)
+    return jsonify({"ok": True})
+
+
+@sessions_bp.route('/api/accounts/<account_id>/session-draft', methods=['DELETE'])
+def delete_draft(account_id):
+    data = load_users()
+    acc = find_account(data, account_id)
+    if not acc:
+        return jsonify({"error": "Account not found"}), 404
+    acc.pop("draft_session", None)
+    save_users(data)
+    return jsonify({"ok": True})
