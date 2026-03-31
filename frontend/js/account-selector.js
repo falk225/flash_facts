@@ -20,7 +20,8 @@ function renderAccounts() {
 
     const avatar = document.createElement('div');
     avatar.className = `avatar ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`;
-    avatar.textContent = acc.name[0].toUpperCase();
+    avatar.textContent = acc.avatar || acc.name[0].toUpperCase();
+    if (acc.avatar) avatar.style.fontSize = '1.5rem';
 
     const nameSpan = document.createElement('span');
     nameSpan.textContent = acc.name;
