@@ -29,7 +29,7 @@ DEFAULT_STATS = {
 @accounts_bp.route('/api/accounts', methods=['GET'])
 def list_accounts():
     data = load_users()
-    accounts = [{"id": a["id"], "name": a["name"], "avatar": a.get("avatar", "")} for a in data["accounts"]]
+    accounts = [{"id": a["id"], "name": a["name"], "avatar": a.get("avatar", ""), "color": a.get("color", ""), "avatar_filter": a.get("avatar_filter", "")} for a in data["accounts"]]
     return jsonify(accounts)
 
 
@@ -62,7 +62,7 @@ def create_account():
     }
     data['accounts'].append(new_account)
     save_users(data)
-    return jsonify({"id": new_account["id"], "name": new_account["name"], "avatar": new_account.get("avatar", "")}), 201
+    return jsonify({"id": new_account["id"], "name": new_account["name"], "avatar": new_account.get("avatar", ""), "color": new_account.get("color", ""), "avatar_filter": new_account.get("avatar_filter", "")}), 201
 
 
 @accounts_bp.route('/api/accounts/<account_id>', methods=['DELETE'])

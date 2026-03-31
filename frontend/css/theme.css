@@ -33,13 +33,6 @@
   border-color: var(--color-error) !important;
 }
 
-/* Avatar colors cycle */
-.avatar-0 { background: #5b6af5; }
-.avatar-1 { background: #ff7043; }
-.avatar-2 { background: #43a047; }
-.avatar-3 { background: #ab47bc; }
-.avatar-4 { background: #e91e63; }
-
 /* Operation card accent colors */
 .op-addition    .op-symbol { color: #5b6af5; }
 .op-subtraction .op-symbol { color: #e53935; }

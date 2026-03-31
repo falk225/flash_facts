@@ -1,8 +1,6 @@
 let selectedAccountId = null;
 let accounts = [];
 
-const AVATAR_COLORS = ['avatar-0', 'avatar-1', 'avatar-2', 'avatar-3', 'avatar-4'];
-
 async function init() {
   accounts = await API.getAccounts();
   renderAccounts();
@@ -13,15 +11,12 @@ function renderAccounts() {
   const grid = document.getElementById('account-grid');
   grid.innerHTML = '';
 
-  accounts.forEach((acc, idx) => {
+  accounts.forEach(acc => {
     const btn = document.createElement('button');
     btn.className = 'account-btn';
     btn.dataset.id = acc.id;
 
-    const avatar = document.createElement('div');
-    avatar.className = `avatar ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`;
-    avatar.textContent = acc.avatar || acc.name[0].toUpperCase();
-    if (acc.avatar) avatar.style.fontSize = '1.5rem';
+    const avatar = makeAvatarEl(acc, 40);
 
     const nameSpan = document.createElement('span');
     nameSpan.textContent = acc.name;
@@ -35,7 +30,6 @@ function renderAccounts() {
     grid.appendChild(btn);
   });
 
-  // Show/hide add form
   const addForm = document.getElementById('add-account-section');
   addForm.style.display = accounts.length < 5 ? 'flex' : 'none';
 }

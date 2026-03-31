@@ -34,6 +34,9 @@ async function init() {
   if (!acc || !config.operations) { window.location.href = '/'; return; }
   document.getElementById('session-user').textContent = acc.name;
 
+  const avatarContainer = document.getElementById('session-avatar');
+  avatarContainer.appendChild(makeAvatarEl(acc, 44));
+
   Sound.load();
 
   if (draft && draft.remaining_deck && draft.remaining_deck.length > 0) {
