@@ -19,6 +19,7 @@ const progressFill   = document.getElementById('progress-fill');
 const scoreDisplay   = document.getElementById('score-display');
 const cardsLeft      = document.getElementById('cards-left');
 const feedbackEl     = document.getElementById('feedback-overlay');
+const answerReveal   = document.getElementById('correct-answer-reveal');
 const sessionView    = document.getElementById('session-view');
 const endScreen      = document.getElementById('end-screen');
 const resumeDialog   = document.getElementById('resume-dialog');
@@ -111,6 +112,8 @@ function renderCard() {
   void parent.offsetWidth;
   parent.classList.add('flash-card');
   problemDisplay.textContent = currentCard.display;
+  answerReveal.textContent = '';
+  answerReveal.classList.remove('visible');
   updateProgress();
 }
 
@@ -176,8 +179,10 @@ function submitAnswer() {
     answerInput.addEventListener('animationend', () => {
       answerInput.classList.remove('shake');
     }, { once: true });
+    answerReveal.textContent = `Answer: ${currentCard.answer}`;
+    answerReveal.classList.add('visible');
     deck.push(currentCard);
-    setTimeout(nextCard, 600);
+    setTimeout(nextCard, 1500);
   }
 }
 

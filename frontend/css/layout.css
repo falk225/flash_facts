@@ -275,6 +275,20 @@
   letter-spacing: -1px;
 }
 
+.correct-answer-reveal {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--color-error);
+  margin-top: 12px;
+  min-height: 1.6rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.correct-answer-reveal.visible {
+  opacity: 1;
+}
+
 .answer-row {
   display: flex;
   gap: 12px;
