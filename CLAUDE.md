@@ -9,7 +9,7 @@ Math flashcard web app for kids. Python/Flask backend, vanilla JS frontend, Dock
 
 ## Deploy
 ```
-tar czf - --exclude='__pycache__' --exclude='.git' -C ~/projects flash_facts | ssh -i ~/.ssh/deploy_key -p 22 user@nas.local "tar xzf - -C /srv/docker"
+tar czf - --exclude='__pycache__' --exclude='.git' --exclude='flash_facts/data' -C ~/projects flash_facts | ssh -i ~/.ssh/deploy_key -p 22 user@nas.local "tar xzf - -C /srv/docker"
 ssh nas "cd /srv/docker/flash_facts && sudo /usr/local/bin/docker compose up -d --build"
 ```
 
