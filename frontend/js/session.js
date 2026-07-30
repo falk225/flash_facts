@@ -11,6 +11,8 @@ let cardResults = {};   // { cardId: { label, operation, first_try_correct } }
 let accepting = true;   // false briefly after an answer to prevent double-submit
 let correctSinceLastSave = 0;
 const AUTO_SAVE_INTERVAL = 10;
+let streak = 0;
+let avatarEl = null;
 
 const problemDisplay = document.getElementById('problem-display');
 const answerInput    = document.getElementById('answer-input');
@@ -38,7 +40,8 @@ async function init() {
   document.getElementById('session-user').textContent = acc.name;
 
   const avatarContainer = document.getElementById('session-avatar');
-  avatarContainer.appendChild(makeAvatarEl(acc, 44));
+  avatarEl = makeAvatarEl(acc, 44);
+  avatarContainer.appendChild(avatarEl);
 
   Sound.load();
 
@@ -124,6 +127,32 @@ function updateProgress() {
   cardsLeft.textContent = `${deck.length} card${deck.length !== 1 ? 's' : ''} left`;
 }
 
+function animateAvatar(type) {
+  if (!avatarEl) return;
+  avatarEl.classList.remove('avatar-correct', 'avatar-wrong');
+  void avatarEl.offsetWidth;
+  avatarEl.classList.add(type === 'correct' ? 'avatar-correct' : 'avatar-wrong');
+  avatarEl.addEventListener('animationend', () => {
+    avatarEl.classList.remove('avatar-correct', 'avatar-wrong');
+  }, { once: true });
+}
+
+function updateStreak() {
+  const streakDisplay = document.getElementById('streak-display');
+  const streakCount = document.getElementById('streak-count');
+  if (streak >= 2) {
+    streakDisplay.style.display = '';
+    streakCount.textContent = streak;
+    if (streak === 5 || (streak >= 10 && streak % 5 === 0)) {
+      streakDisplay.classList.remove('streak-milestone');
+      void streakDisplay.offsetWidth;
+      streakDisplay.classList.add('streak-milestone');
+    }
+  } else {
+    streakDisplay.style.display = 'none';
+  }
+}
+
 function showFeedback(type) {
   feedbackEl.className = 'feedback-overlay';
   void feedbackEl.offsetWidth;
@@ -160,6 +189,9 @@ function submitAnswer() {
       firstTryCorrect.add(currentCard.id);
       cardResults[currentCard.id].first_try_correct = true;
     }
+    streak++;
+    updateStreak();
+    animateAvatar('correct');
     correctSinceLastSave++;
     if (correctSinceLastSave >= AUTO_SAVE_INTERVAL) {
       correctSinceLastSave = 0;
@@ -181,6 +213,9 @@ function submitAnswer() {
     }, { once: true });
     answerReveal.textContent = `Answer: ${currentCard.answer}`;
     answerReveal.classList.add('visible');
+    streak = 0;
+    updateStreak();
+    animateAvatar('wrong');
     deck.push(currentCard);
     setTimeout(nextCard, 1500);
   }
