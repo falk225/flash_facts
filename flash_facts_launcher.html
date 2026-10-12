@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Launch Flash Facts</title>
   <style>
-    /* === CHANGE THIS TO YOUR NAS IP ADDRESS === */
+    /* === CHANGE THIS TO YOUR SERVER ADDRESS === */
     /* See the FLASH_FACTS_URL variable in the script below */
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -127,10 +127,10 @@
 
 <script>
   // ================================================================
-  // CHANGE THIS URL TO YOUR NAS IP ADDRESS AND PORT
-  // Example: 'http://192.168.1.100:5000'
+  // CHANGE THIS URL TO YOUR SERVER ADDRESS AND PORT
+  // Example: 'http://my-server.local:8090'
   // ================================================================
-  var FLASH_FACTS_URL = 'http://nas.local:8090';
+  var FLASH_FACTS_URL = 'http://localhost:8090';
   // ================================================================
 
   document.getElementById('launch-link').href = FLASH_FACTS_URL;

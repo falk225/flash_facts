@@ -4,3 +4,9 @@ __pycache__/
 .env
 venv/
 .venv/
+
+# Local install data and notes — never publish
+data/users.json
+CLAUDE.local.md
+*.local.*
+PORTFOLIO.md

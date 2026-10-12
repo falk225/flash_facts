@@ -1,21 +1,22 @@
 # flash_facts
 
-Math flashcard web app for kids. Python/Flask backend, vanilla JS frontend, Docker on Synology NAS.
+Math flashcard web app for kids. Python/Flask backend, vanilla JS frontend, Docker.
 
-## Live deployment
-- URL: http://nas.local:8090
-- NAS path: /srv/docker/flash_facts
-- SSH alias: `ssh nas` (key at ~/.ssh/deploy_key, port 22)
+This repo is public. Deployment details for a specific install (hosts, SSH,
+real account names) belong in the gitignored `CLAUDE.local.md`, never in
+tracked files. Read it if present.
 
-## Deploy
+## Run
 ```
-tar czf - --exclude='__pycache__' --exclude='.git' --exclude='flash_facts/data' -C ~/projects flash_facts | ssh -i ~/.ssh/deploy_key -p 22 user@nas.local "tar xzf - -C /srv/docker"
-ssh nas "cd /srv/docker/flash_facts && sudo /usr/local/bin/docker compose up -d --build"
+docker compose up -d --build   # http://localhost:8090
 ```
+Docker rebuild always needed (`--build`) — frontend is baked into the image,
+not volume-mounted.
 
 ## Accounts
-Player1 🦝 · Player2 🐒 · Player3 🐢 · Player4 🐕 · Player5 🐆
-Configured in data/users.json (volume-mounted on NAS, persists across rebuilds).
+Stored in `data/users.json` (gitignored, volume-mounted, persists across
+rebuilds). On first run it is seeded from `data/users.example.json` (demo
+players).
 
 ## Architecture
 - `backend/app.py` — Flask app, serves frontend as static files
@@ -31,5 +32,3 @@ Configured in data/users.json (volume-mounted on NAS, persists across rebuilds).
 - Auto-saves draft every 10 correct answers (protects against deploys mid-session)
 - Save & Quit button saves full deck state; resume dialog appears on next Play
 - Stats page tracks session history and per-fact problem areas
-- rsync doesn't work to NAS (permission issue); use tar-over-SSH instead
-- Docker rebuild always needed (`--build`) — frontend is baked into image, not volume-mounted
