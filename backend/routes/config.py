@@ -1,3 +1,4 @@
+from typing import Any
 from flask import Blueprint, jsonify, request
 from backend.services.data_store import load_users, update_users, find_account
 
@@ -7,7 +8,7 @@ VALID_OPS = {"addition", "subtraction", "multiplication", "division"}
 
 
 @config_bp.route('/api/accounts/<account_id>/config', methods=['GET'])
-def get_config(account_id):
+def get_config(account_id: str):
     data = load_users()
     acc = find_account(data, account_id)
     if not acc:
@@ -16,9 +17,9 @@ def get_config(account_id):
 
 
 @config_bp.route('/api/accounts/<account_id>/config', methods=['PUT'])
-def save_config(account_id):
-    body = request.get_json(silent=True) or {}
-    ops = body.get("operations", {})
+def save_config(account_id: str):
+    body: dict[str, Any] = request.get_json(silent=True) or {}
+    ops: dict[str, Any] = body.get("operations", {})
 
     # Validate
     for op_name, op_val in ops.items():

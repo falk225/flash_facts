@@ -13,6 +13,16 @@ docker compose up -d --build   # http://localhost:8090
 Docker rebuild always needed (`--build`) — frontend is baked into the image,
 not volume-mounted.
 
+## Test
+```
+.venv/bin/pytest                 # Python: API + data store
+node --test tests/js/*.test.js   # JS: deck.js (loaded into a vm context, unmodified)
+.venv/bin/pyright                # strict; must stay at 0 errors
+```
+Dev deps: `backend/requirements-dev.txt` (runtime deps stay in `requirements.txt` for Docker).
+Writes to users.json go through `data_store.update_users()` (one lock across
+read-modify-write); never pair `load_users()` with `save_users()` in a route.
+
 ## Accounts
 Stored in `data/users.json` (gitignored, volume-mounted, persists across
 rebuilds). On first run it is seeded from `data/users.example.json` (demo

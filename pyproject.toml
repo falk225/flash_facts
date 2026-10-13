@@ -1,3 +1,10 @@
+[tool.pyright]
+include = ["backend", "tests", "generate_sounds.py"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

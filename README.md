@@ -72,9 +72,21 @@ frontend/  (vanilla JS, no build step)       backend/  (Flask)
 
 There is no authentication. The app is meant to run on a trusted home network.
 
-## Status
+## Development
 
-Feature-complete for home use. Next up: a pytest suite for the API and data store, tests for deck generation, and CI. At the moment `deck.js` only runs a few console self-assertions when it loads.
+```bash
+python -m venv .venv && . .venv/bin/activate
+pip install -r backend/requirements-dev.txt
+
+pytest                          # API + data store (Python)
+node --test tests/js/*.test.js  # deck generation + shuffle (Node 18+, no npm install)
+pyright                         # strict type check
+```
+
+- **API tests** cover every route through Flask's test client. Each test uses its own temporary data file, so tests never touch real data. A multi-process test runs concurrent writers against the data file to check that no update is lost. It caught a real bug: the original load-then-save pattern dropped about 70% of contended writes.
+- **Frontend tests** load the browser script `deck.js` into a Node `vm` context, so the shipped file is tested unchanged. They check answer correctness, that subtraction never goes negative, that division never divides by zero, and that the Fisher–Yates shuffle is a uniform permutation.
+- **Type checking** is pyright in `strict` mode. The shape of `users.json` is described once, as `TypedDict`s in `data_store.py`.
+- Both suites were mutation-checked: each of 19 deliberately injected bugs makes at least one test fail.
 
 ## How it was built
 

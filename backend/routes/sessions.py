@@ -1,12 +1,13 @@
 from datetime import date, datetime
+from typing import Any
 from flask import Blueprint, jsonify, request
-from backend.services.data_store import load_users, update_users, find_account
+from backend.services.data_store import HistoryEntry, load_users, update_users, find_account
 
 sessions_bp = Blueprint('sessions', __name__)
 
 
 @sessions_bp.route('/api/accounts/<account_id>/sessions', methods=['POST'])
-def save_session(account_id):
+def save_session(account_id: str):
     """
     Body: {
       "total_cards": int,
@@ -16,10 +17,10 @@ def save_session(account_id):
       ]
     }
     """
-    body = request.get_json(silent=True) or {}
-    total = body.get("total_cards", 0)
-    first_try = body.get("first_try_correct", 0)
-    card_results = body.get("card_results", [])
+    body: dict[str, Any] = request.get_json(silent=True) or {}
+    total: int = body.get("total_cards", 0)
+    first_try: int = body.get("first_try_correct", 0)
+    card_results: list[dict[str, Any]] = body.get("card_results", [])
 
     score_pct = round(first_try / total * 100) if total > 0 else 0
 
@@ -38,7 +39,7 @@ def save_session(account_id):
         # Append session history (keep last 50)
         stats["sessions_completed"] = stats.get("sessions_completed", 0) + 1
         stats["last_session"] = date.today().isoformat()
-        history_entry = {
+        history_entry: HistoryEntry = {
             "date": date.today().isoformat(),
             "total_cards": total,
             "first_try_correct": first_try,
@@ -66,7 +67,7 @@ def save_session(account_id):
 
 
 @sessions_bp.route('/api/accounts/<account_id>/stats', methods=['GET'])
-def get_stats(account_id):
+def get_stats(account_id: str):
     data = load_users()
     acc = find_account(data, account_id)
     if not acc:
@@ -77,7 +78,7 @@ def get_stats(account_id):
 # --- Session draft (save/resume in-progress sessions) ---
 
 @sessions_bp.route('/api/accounts/<account_id>/session-draft', methods=['GET'])
-def get_draft(account_id):
+def get_draft(account_id: str):
     data = load_users()
     acc = find_account(data, account_id)
     if not acc:
@@ -87,7 +88,7 @@ def get_draft(account_id):
 
 
 @sessions_bp.route('/api/accounts/<account_id>/session-draft', methods=['PUT'])
-def save_draft(account_id):
+def save_draft(account_id: str):
     """
     Body: {
       "total_cards": int,
@@ -97,7 +98,7 @@ def save_draft(account_id):
       "card_results": { cardId: {...} }
     }
     """
-    body = request.get_json(silent=True) or {}
+    body: dict[str, Any] = request.get_json(silent=True) or {}
     with update_users() as data:
         acc = find_account(data, account_id)
         if not acc:
@@ -115,7 +116,7 @@ def save_draft(account_id):
 
 
 @sessions_bp.route('/api/accounts/<account_id>/session-draft', methods=['DELETE'])
-def delete_draft(account_id):
+def delete_draft(account_id: str):
     with update_users() as data:
         acc = find_account(data, account_id)
         if not acc:

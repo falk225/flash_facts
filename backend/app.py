@@ -28,7 +28,7 @@ def index():
 
 
 @app.route('/<path:filename>')
-def static_files(filename):
+def static_files(filename: str):
     return send_from_directory(FRONTEND_DIR, filename)
 
 

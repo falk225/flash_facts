@@ -19,7 +19,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 SAMPLE_RATE = 44100
 
 
-def write_wav(filename, samples):
+def write_wav(filename: str, samples: list[float]) -> None:
     with wave.open(filename, 'w') as f:
         f.setnchannels(1)
         f.setsampwidth(2)
@@ -28,10 +28,10 @@ def write_wav(filename, samples):
             f.writeframes(struct.pack('<h', int(max(-32767, min(32767, s)))))
 
 
-def generate_tone(freq, duration, volume=0.5, fade_ms=30):
+def generate_tone(freq: float, duration: float, volume: float = 0.5, fade_ms: int = 30) -> list[float]:
     n = int(SAMPLE_RATE * duration)
     fade = int(SAMPLE_RATE * fade_ms / 1000)
-    samples = []
+    samples: list[float] = []
     for i in range(n):
         t = i / SAMPLE_RATE
         val = volume * 32767 * math.sin(2 * math.pi * freq * t)
@@ -44,14 +44,14 @@ def generate_tone(freq, duration, volume=0.5, fade_ms=30):
     return samples
 
 
-def generate_correct():
+def generate_correct() -> list[float]:
     # Two-note ascending ding: C5 then E5
     s = generate_tone(523.25, 0.12, 0.6)  # C5
     s += generate_tone(659.25, 0.20, 0.5)  # E5
     return s
 
 
-def generate_wrong():
+def generate_wrong() -> list[float]:
     # Low buzzer thud
     s = generate_tone(180, 0.08, 0.7)
     s += generate_tone(140, 0.12, 0.5)

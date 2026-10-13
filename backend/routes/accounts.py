@@ -1,10 +1,11 @@
 import uuid
+from typing import Any
 from flask import Blueprint, jsonify, request
-from backend.services.data_store import load_users, update_users
+from backend.services.data_store import Account, Config, Stats, load_users, update_users
 
 accounts_bp = Blueprint('accounts', __name__)
 
-DEFAULT_CONFIG = {
+DEFAULT_CONFIG: Config = {
     "operations": {
         "addition":       {"enabled": True,  "min": 0, "max": 10},
         "subtraction":    {"enabled": True,  "min": 0, "max": 10},
@@ -13,7 +14,7 @@ DEFAULT_CONFIG = {
     }
 }
 
-DEFAULT_STATS = {
+DEFAULT_STATS: Stats = {
     "sessions_completed": 0,
     "last_session": None,
     "history": [],
@@ -35,7 +36,7 @@ def list_accounts():
 
 @accounts_bp.route('/api/accounts', methods=['POST'])
 def create_account():
-    body = request.get_json(silent=True) or {}
+    body: dict[str, Any] = request.get_json(silent=True) or {}
     name = (body.get('name') or '').strip()
     if not name:
         return jsonify({"error": "name is required"}), 400
@@ -44,7 +45,7 @@ def create_account():
         if len(data['accounts']) >= 5:
             return jsonify({"error": "Maximum of 5 accounts allowed"}), 400
 
-        new_account = {
+        new_account: Account = {
             "id": "acc_" + uuid.uuid4().hex[:8],
             "name": name,
             "config": DEFAULT_CONFIG.copy(),
@@ -65,7 +66,7 @@ def create_account():
 
 
 @accounts_bp.route('/api/accounts/<account_id>', methods=['DELETE'])
-def delete_account(account_id):
+def delete_account(account_id: str):
     with update_users() as data:
         original_len = len(data['accounts'])
         data['accounts'] = [a for a in data['accounts'] if a['id'] != account_id]

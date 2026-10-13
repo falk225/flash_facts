@@ -29,7 +29,7 @@ def test_create_account(client: FlaskClient) -> None:
     assert body["name"] == "Sam"
     assert body["id"].startswith("acc_")
     stored = data_store.find_account(data_store.load_users(), body["id"])
-    assert stored is not None
+    assert stored is not None and "stats" in stored and "config" in stored
     assert stored["stats"]["sessions_completed"] == 0
     assert stored["config"]["operations"]["addition"]["enabled"] is True
 
