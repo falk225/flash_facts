@@ -1,6 +1,7 @@
 import json
 import fcntl
 import os
+from contextlib import contextmanager
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data')
 DATA_FILE = os.path.join(DATA_DIR, 'users.json')
@@ -32,14 +33,37 @@ def load_users():
             fcntl.flock(f, fcntl.LOCK_UN)
 
 
+def _write(f, data):
+    f.seek(0)
+    json.dump(data, f, indent=2)
+    f.truncate()
+
+
 def save_users(data):
     _ensure_file()
     with open(DATA_FILE, 'r+') as f:
         fcntl.flock(f, fcntl.LOCK_EX)
         try:
-            f.seek(0)
-            json.dump(data, f, indent=2)
-            f.truncate()
+            _write(f, data)
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
+
+
+@contextmanager
+def update_users():
+    """Read-modify-write under one exclusive lock.
+
+    Separate load_users() + save_users() calls release the lock in between, so
+    two gunicorn workers writing at once lose one of the updates. Changes made
+    to the yielded data are saved on normal exit; an exception skips the write.
+    """
+    _ensure_file()
+    with open(DATA_FILE, 'r+') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            data = json.load(f)
+            yield data
+            _write(f, data)
         finally:
             fcntl.flock(f, fcntl.LOCK_UN)
 

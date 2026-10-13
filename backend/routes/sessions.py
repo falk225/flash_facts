@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from flask import Blueprint, jsonify, request
-from backend.services.data_store import load_users, save_users, find_account
+from backend.services.data_store import load_users, update_users, find_account
 
 sessions_bp = Blueprint('sessions', __name__)
 
@@ -23,47 +23,45 @@ def save_session(account_id):
 
     score_pct = round(first_try / total * 100) if total > 0 else 0
 
-    data = load_users()
-    acc = find_account(data, account_id)
-    if not acc:
-        return jsonify({"error": "Account not found"}), 404
+    with update_users() as data:
+        acc = find_account(data, account_id)
+        if not acc:
+            return jsonify({"error": "Account not found"}), 404
 
-    stats = acc.setdefault("stats", {
-        "sessions_completed": 0,
-        "last_session": None,
-        "history": [],
-        "problem_areas": {"addition": {}, "subtraction": {}, "multiplication": {}, "division": {}}
-    })
+        stats = acc.setdefault("stats", {
+            "sessions_completed": 0,
+            "last_session": None,
+            "history": [],
+            "problem_areas": {"addition": {}, "subtraction": {}, "multiplication": {}, "division": {}}
+        })
 
-    # Append session history (keep last 50)
-    stats["sessions_completed"] = stats.get("sessions_completed", 0) + 1
-    stats["last_session"] = date.today().isoformat()
-    history_entry = {
-        "date": date.today().isoformat(),
-        "total_cards": total,
-        "first_try_correct": first_try,
-        "score_pct": score_pct
-    }
-    stats.setdefault("history", []).append(history_entry)
-    if len(stats["history"]) > 50:
-        stats["history"] = stats["history"][-50:]
+        # Append session history (keep last 50)
+        stats["sessions_completed"] = stats.get("sessions_completed", 0) + 1
+        stats["last_session"] = date.today().isoformat()
+        history_entry = {
+            "date": date.today().isoformat(),
+            "total_cards": total,
+            "first_try_correct": first_try,
+            "score_pct": score_pct
+        }
+        stats.setdefault("history", []).append(history_entry)
+        if len(stats["history"]) > 50:
+            stats["history"] = stats["history"][-50:]
 
-    # Update per-card problem areas
-    problem_areas = stats.setdefault("problem_areas", {
-        "addition": {}, "subtraction": {}, "multiplication": {}, "division": {}
-    })
-    for result in card_results:
-        op = result.get("operation")
-        label = result.get("label")
-        correct = result.get("first_try_correct", False)
-        if op and label:
-            op_dict = problem_areas.setdefault(op, {})
-            entry = op_dict.setdefault(label, {"attempts": 0, "first_try_correct": 0})
-            entry["attempts"] += 1
-            if correct:
-                entry["first_try_correct"] += 1
-
-    save_users(data)
+        # Update per-card problem areas
+        problem_areas = stats.setdefault("problem_areas", {
+            "addition": {}, "subtraction": {}, "multiplication": {}, "division": {}
+        })
+        for result in card_results:
+            op = result.get("operation")
+            label = result.get("label")
+            correct = result.get("first_try_correct", False)
+            if op and label:
+                op_dict = problem_areas.setdefault(op, {})
+                entry = op_dict.setdefault(label, {"attempts": 0, "first_try_correct": 0})
+                entry["attempts"] += 1
+                if correct:
+                    entry["first_try_correct"] += 1
     return jsonify({"ok": True, "score_pct": score_pct})
 
 
@@ -100,29 +98,27 @@ def save_draft(account_id):
     }
     """
     body = request.get_json(silent=True) or {}
-    data = load_users()
-    acc = find_account(data, account_id)
-    if not acc:
-        return jsonify({"error": "Account not found"}), 404
+    with update_users() as data:
+        acc = find_account(data, account_id)
+        if not acc:
+            return jsonify({"error": "Account not found"}), 404
 
-    acc["draft_session"] = {
-        "saved_at": datetime.now().isoformat(timespec='seconds'),
-        "total_cards": body.get("total_cards", 0),
-        "remaining_deck": body.get("remaining_deck", []),
-        "seen_once": body.get("seen_once", []),
-        "first_try_correct": body.get("first_try_correct", []),
-        "card_results": body.get("card_results", {})
-    }
-    save_users(data)
+        acc["draft_session"] = {
+            "saved_at": datetime.now().isoformat(timespec='seconds'),
+            "total_cards": body.get("total_cards", 0),
+            "remaining_deck": body.get("remaining_deck", []),
+            "seen_once": body.get("seen_once", []),
+            "first_try_correct": body.get("first_try_correct", []),
+            "card_results": body.get("card_results", {})
+        }
     return jsonify({"ok": True})
 
 
 @sessions_bp.route('/api/accounts/<account_id>/session-draft', methods=['DELETE'])
 def delete_draft(account_id):
-    data = load_users()
-    acc = find_account(data, account_id)
-    if not acc:
-        return jsonify({"error": "Account not found"}), 404
-    acc.pop("draft_session", None)
-    save_users(data)
+    with update_users() as data:
+        acc = find_account(data, account_id)
+        if not acc:
+            return jsonify({"error": "Account not found"}), 404
+        acc.pop("draft_session", None)
     return jsonify({"ok": True})

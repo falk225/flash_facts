@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from backend.services.data_store import load_users, save_users, find_account
+from backend.services.data_store import load_users, update_users, find_account
 
 config_bp = Blueprint('config', __name__)
 
@@ -29,11 +29,9 @@ def save_config(account_id):
         if not (0 <= mn <= 15 and 0 <= mx <= 15 and mn <= mx):
             return jsonify({"error": f"Invalid range for {op_name}"}), 400
 
-    data = load_users()
-    acc = find_account(data, account_id)
-    if not acc:
-        return jsonify({"error": "Account not found"}), 404
-
-    acc["config"] = {"operations": ops}
-    save_users(data)
+    with update_users() as data:
+        acc = find_account(data, account_id)
+        if not acc:
+            return jsonify({"error": "Account not found"}), 404
+        acc["config"] = {"operations": ops}
     return jsonify({"ok": True})
